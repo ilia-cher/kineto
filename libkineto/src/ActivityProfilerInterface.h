@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <set>
+#include <vector>
 
 #include "ActivityType.h"
 
@@ -29,12 +30,14 @@ class ActivityProfilerInterface {
 
   void prepareTrace(const std::set<ActivityType>& activityTypes);
   void startTrace();
-  void stopTrace();
+  std::vector<ActivityEvent> stopTrace();
   void pushCorrelationId(uint64_t id);
   void popCorrelationId();
   void transferCpuTrace(
       std::unique_ptr<CpuTraceBuffer> traceBuffer);
   bool traceInclusionFilter(const std::string& match);
+
+  std::vector<ActivityEvent> getEvents();
 
  private:
   bool cpuOnly_{true};

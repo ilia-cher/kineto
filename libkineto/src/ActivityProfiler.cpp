@@ -457,7 +457,7 @@ void ActivityProfiler::configure(
   profileStartTime_ = (config_->requestTimestamp() + config_->maxRequestAge()) +
       config_->activitiesWarmupDuration();
   if (profileStartTime_ < now) {
-    profileStartTime_ = now + config_->activitiesWarmupDuration();
+    profileStartTime_ = now;// + config_->activitiesWarmupDuration();
   }
   LOG(INFO) << "Tracing starting in "
             << duration_cast<seconds>(profileStartTime_ - now).count() << "s";
@@ -478,7 +478,7 @@ void ActivityProfiler::startTraceUnlocked(const time_point<system_clock>& now) {
   currentRunloopState_ = RunloopState::CollectTrace;
 }
 
-void ActivityProfiler::stopTraceUnlocked(const time_point<system_clock>& now) {
+std::vector<ActivityEvent> ActivityProfiler::stopTraceUnlocked(const time_point<system_clock>& now) {
   if (currentRunloopState_ != RunloopState::CollectTrace) {
     LOG(WARNING) << "Called stopTrace with state == " <<
         static_cast<std::underlying_type<RunloopState>::type>(
@@ -500,8 +500,15 @@ void ActivityProfiler::stopTraceUnlocked(const time_point<system_clock>& now) {
           setupOverhead_, duration_cast<microseconds>(t2 - timestamp).count());
     }
   }
-  VLOG(0) << "CollectTrace -> ProcessTrace";
-  currentRunloopState_ = RunloopState::ProcessTrace;
+  //VLOG(0) << "CollectTrace -> ProcessTrace";
+  //currentRunloopState_ = RunloopState::ProcessTrace;
+  processTraces();
+  auto events = getEvents();
+  finalizeTrace(*config_);
+  resetTraceData();
+  currentRunloopState_ = RunloopState::WaitForRequest;
+  VLOG(0) << "ProcessTrace -> WaitForRequest";
+  return events;
 }
 
 void ActivityProfiler::cancelTrace(const time_point<system_clock>& now) {
@@ -538,19 +545,19 @@ const time_point<system_clock> ActivityProfiler::performRunLoopStep(
         currentRunloopState_ = RunloopState::ProcessTrace;
       }
 
-      if (now >= profileStartTime_) {
-        if (now > profileStartTime_ + milliseconds(10)) {
-          LOG(WARNING)
-              << "Tracing started "
-              << duration_cast<milliseconds>(now - profileStartTime_).count()
-              << "ms late!";
-        } else {
-          LOG(INFO) << "Tracing started";
-        }
-        startTrace(now);
-      } else if (nextWakeupTime > profileStartTime_) {
-        new_wakeup_time = profileStartTime_;
+      //if (now >= profileStartTime_) {
+      if (now > profileStartTime_ + milliseconds(10)) {
+        LOG(WARNING)
+            << "Tracing started "
+            << duration_cast<milliseconds>(now - profileStartTime_).count()
+            << "ms late!";
+      } else {
+        LOG(WARNING) << "Tracing started";
       }
+      startTrace(now);
+      //} else if (nextWakeupTime > profileStartTime_) {
+      //  new_wakeup_time = profileStartTime_;
+      //}
 
       break;
 
@@ -670,5 +677,8 @@ void ActivityProfiler::resetTraceData() {
   gpuNetSpanMap_.clear();
 }
 
+std::vector<ActivityEvent> ActivityProfiler::getEvents() {
+  return logger_->getEvents();
+}
 
 } // namespace KINETO_NAMESPACE

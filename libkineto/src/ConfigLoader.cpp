@@ -137,7 +137,7 @@ ConfigLoader::ConfigLoader()
   SET_VERBOSE_LOG_LEVEL(config_.verboseLogLevel(), config_.verboseLogModules());
   setupSignalHandler(config_.sigUsr2Enabled());
   if (daemonConfigLoaderFactory) {
-    daemonConfigLoader_ = daemonConfigLoaderFactory()();
+    //daemonConfigLoader_ = daemonConfigLoaderFactory()();
   }
   updateThread_ =
       std::make_unique<std::thread>(&ConfigLoader::updateConfigThread, this);

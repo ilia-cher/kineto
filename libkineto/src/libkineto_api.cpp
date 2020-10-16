@@ -45,4 +45,8 @@ void LibkinetoApi::prepareTrace(const std::set<ActivityType>& activities) {
   activityProfiler_->prepareTrace(activities);
 }
 
+std::vector<ActivityEvent> LibkinetoApi::getEvents() {
+  return activityProfiler_->getEvents();
+}
+
 } // namespace libkineto

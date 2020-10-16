@@ -93,6 +93,8 @@ class ChromeTraceLogger : public ActivityLogger {
 
   void finalizeTrace(const Config& config) override;
 
+  std::vector<ActivityEvent> getEvents() override;
+
  private:
   void logActivity(const CUpti_Activity* act);
 
@@ -107,6 +109,9 @@ class ChromeTraceLogger : public ActivityLogger {
 
   // Cache pid to avoid repeated calls to getpid()
   pid_t pid_;
+
+  //
+  std::vector<ActivityEvent> activity_events_;
 };
 
 } // namespace KINETO_NAMESPACE

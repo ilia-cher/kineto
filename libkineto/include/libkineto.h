@@ -40,9 +40,11 @@ class LibkinetoApi {
     activityProfiler_->startTrace();
   }
 
-  void stopTrace() {
-    activityProfiler_->stopTrace();
+  std::vector<ActivityEvent> stopTrace() {
+    return activityProfiler_->stopTrace();
   }
+
+  std::vector<ActivityEvent> getEvents();
 
   void transferCpuTrace(std::unique_ptr<CpuTraceBuffer> cpuTrace) {
     activityProfiler_->transferCpuTrace(std::move(cpuTrace));

@@ -124,4 +124,8 @@ void ActivityProfilerController::prepareTrace(Config& config) {
   profiler_->configure(config, makeLogger(config), now);
 }
 
+std::vector<ActivityEvent> ActivityProfilerController::getEvents() {
+  return profiler_->getEvents();
+}
+
 } // namespace KINETO_NAMESPACE

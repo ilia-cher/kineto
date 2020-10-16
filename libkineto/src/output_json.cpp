@@ -386,6 +386,16 @@ void ChromeTraceLogger::handleGpuActivity(
       warps_per_sm,
       kernel->gridX, kernel->gridY, kernel->gridZ,
       kernel->blockX, kernel->blockY, kernel->blockZ);
+
+  ActivityEvent evt;
+  evt.name = name;
+  evt.startUs = us(kernel->start);
+  evt.endUs = us(kernel->end);
+  evt.deviceId = kernel->deviceId;
+  evt.threadId = kernel->streamId;
+  evt.correlationId = kernel->correlationId;
+  evt.type = ActivityType::CONCURRENT_KERNEL;
+  activity_events_.emplace_back(evt);
   // clang-format on
 }
 
@@ -423,6 +433,16 @@ void ChromeTraceLogger::handleGpuActivity(
       memcpy->deviceId, memcpy->contextId,
       memcpy->streamId, memcpy->correlationId, ext.correlationId,
       memcpy->bytes, memcpy->bytes * 1.0 / (memcpy->end - memcpy->start));
+
+  ActivityEvent evt;
+  evt.name = fmt::format("Memcpy {} ({} -> {})", copy_kind, src_kind, dst_kind);
+  evt.startUs = us(memcpy->start);
+  evt.endUs = us(memcpy->end);
+  evt.deviceId = memcpy->deviceId;
+  evt.threadId = memcpy->streamId;
+  evt.correlationId = memcpy->correlationId;
+  evt.type = ActivityType::GPU_MEMCPY;
+  activity_events_.emplace_back(evt);
   // clang-format on
 }
 
@@ -461,6 +481,16 @@ void ChromeTraceLogger::handleGpuActivity(
       memcpy->srcContextId, memcpy->contextId, memcpy->dstContextId,
       memcpy->streamId, memcpy->correlationId, ext.correlationId,
       memcpy->bytes, memcpy->bytes * 1.0 / (memcpy->end - memcpy->start));
+
+  ActivityEvent evt;
+  evt.name = fmt::format("Memcpy {} ({} -> {})", copy_kind, src_kind, dst_kind);
+  evt.startUs = us(memcpy->start);
+  evt.endUs = us(memcpy->end);
+  evt.deviceId = memcpy->deviceId;
+  evt.threadId = memcpy->streamId;
+  evt.correlationId = memcpy->correlationId;
+  evt.type = ActivityType::GPU_MEMCPY;
+  activity_events_.emplace_back(evt);
   // clang-format on
 }
 
@@ -492,6 +522,16 @@ void ChromeTraceLogger::handleGpuActivity(
       memset->deviceId, memset->contextId,
       memset->streamId, memset->correlationId, ext.correlationId,
       memset->bytes, memset->bytes * 1.0 / (memset->end - memset->start));
+
+  ActivityEvent evt;
+  evt.name = fmt::format("Memset ({})", memory_kind);
+  evt.startUs = us(memset->start);
+  evt.endUs = us(memset->end);
+  evt.deviceId = memset->deviceId;
+  evt.threadId = memset->streamId;
+  evt.correlationId = memset->correlationId;
+  evt.type = ActivityType::GPU_MEMSET;
+  activity_events_.emplace_back(evt);
   // clang-format on
 }
 
@@ -501,7 +541,12 @@ void ChromeTraceLogger::finalizeTrace(const Config& config) {
     return;
   }
   traceOf_.close();
+  activity_events_.clear();
   LOG(INFO) << "Chrome Trace written to " << config.activitiesLogFile();
+}
+
+std::vector<ActivityEvent> ChromeTraceLogger::getEvents() {
+  return activity_events_;
 }
 
 } // namespace KINETO_NAMESPACE

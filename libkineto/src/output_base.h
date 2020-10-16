@@ -12,8 +12,11 @@
 #include <ostream>
 #include <thread>
 #include <unordered_map>
+#include <vector>
 
 #include <cupti.h>
+
+#include "ActivityType.h"
 #include "CpuOpInfo.h"
 
 namespace KINETO_NAMESPACE {
@@ -89,6 +92,10 @@ class ActivityLogger {
   handleLinkEnd(uint32_t id, int device, int stream, uint64_t tsUsecs) = 0;
 
   virtual void finalizeTrace(const Config& config) = 0;
+
+  virtual std::vector<ActivityEvent> getEvents() {
+    throw std::logic_error("Unsupported");
+  }
 
  protected:
   ActivityLogger() = default;

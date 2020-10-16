@@ -39,12 +39,12 @@ class ActivityProfilerController {
     profiler_->startTrace(std::chrono::system_clock::now());
   }
 
-  void stopTrace() {
+  std::vector<ActivityEvent> stopTrace() {
     // FIXME: Refactor
     if (libkineto::api().client()) {
       libkineto::api().client()->stop();
     }
-    profiler_->stopTrace(std::chrono::system_clock::now());
+    return profiler_->stopTrace(std::chrono::system_clock::now());
   }
 
   bool traceInclusionFilter(const std::string& match) {
@@ -55,6 +55,8 @@ class ActivityProfilerController {
       std::unique_ptr<libkineto::CpuTraceBuffer> cpuTrace) {
     return profiler_->transferCpuTrace(std::move(cpuTrace));
   }
+
+  std::vector<ActivityEvent> getEvents();
 
  private:
   void profilerLoop();

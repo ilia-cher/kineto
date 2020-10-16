@@ -38,8 +38,8 @@ void ActivityProfilerInterface::startTrace() {
   controller_->startTrace();
 }
 
-void ActivityProfilerInterface::stopTrace() {
-  controller_->stopTrace();
+std::vector<ActivityEvent> ActivityProfilerInterface::stopTrace() {
+  return controller_->stopTrace();
 }
 
 void ActivityProfilerInterface::pushCorrelationId(uint64_t id) {
@@ -57,6 +57,10 @@ void ActivityProfilerInterface::transferCpuTrace(
 
 bool ActivityProfilerInterface::traceInclusionFilter(const std::string& match) {
   return controller_->traceInclusionFilter(match);
+}
+
+std::vector<ActivityEvent> ActivityProfilerInterface::getEvents() {
+  return controller_->getEvents();
 }
 
 } // namespace libkineto

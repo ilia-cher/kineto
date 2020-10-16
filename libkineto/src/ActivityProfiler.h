@@ -60,9 +60,9 @@ class ActivityProfiler {
   }
 
 
-  void stopTrace(const std::chrono::time_point<std::chrono::system_clock>& now) {
+  std::vector<ActivityEvent> stopTrace(const std::chrono::time_point<std::chrono::system_clock>& now) {
     std::lock_guard<std::mutex> guard(mutex_);
-    stopTraceUnlocked(now);
+    return stopTraceUnlocked(now);
   }
 
   void cancelTrace(
@@ -86,6 +86,8 @@ class ActivityProfiler {
   }
 
   bool applyNetFilterUnlocked(const std::string& name);
+
+  std::vector<ActivityEvent> getEvents();
 
  private:
   class ExternalEventMap {
@@ -155,7 +157,7 @@ class ActivityProfiler {
   void startTraceUnlocked(
       const std::chrono::time_point<std::chrono::system_clock>& now);
 
-  void stopTraceUnlocked(
+  std::vector<ActivityEvent> stopTraceUnlocked(
       const std::chrono::time_point<std::chrono::system_clock>& now);
 
   // Compress and upload the trace to Manifold if configured
