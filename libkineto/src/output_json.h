@@ -14,7 +14,7 @@
 #include <unordered_map>
 
 #include <cupti.h>
-#include "external_api.h"
+#include "CpuOpInfo.h"
 #include "output_base.h"
 
 namespace KINETO_NAMESPACE {
@@ -63,28 +63,28 @@ class ChromeTraceLogger : public ActivityLogger {
   void handleCpuActivity(
       const std::string& netName,
       int netIteration,
-      const libkineto::external_api::OpDetails& activity) override;
+      const libkineto::CpuOpInfo& activity) override;
 
   void handleRuntimeActivity(
       const CUpti_ActivityAPI* activity,
-      const libkineto::external_api::OpDetails& ext) override;
+      const libkineto::CpuOpInfo& ext) override;
 
   void handleGpuActivity(
       const CUpti_ActivityKernel4* kernel,
-      const libkineto::external_api::OpDetails& ext,
+      const libkineto::CpuOpInfo& ext,
       int smCount) override;
 
   void handleGpuActivity(
       const CUpti_ActivityMemcpy* memcpy,
-      const libkineto::external_api::OpDetails& ext) override;
+      const libkineto::CpuOpInfo& ext) override;
 
   void handleGpuActivity(
       const CUpti_ActivityMemcpy2* memcpy,
-      const libkineto::external_api::OpDetails& ext) override;
+      const libkineto::CpuOpInfo& ext) override;
 
   void handleGpuActivity(
       const CUpti_ActivityMemset* memset,
-      const libkineto::external_api::OpDetails& ext) override;
+      const libkineto::CpuOpInfo& ext) override;
 
   // Create a flow event to an external event
   void handleLinkStart(const CUpti_ActivityAPI* activity) override;

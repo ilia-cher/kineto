@@ -247,7 +247,7 @@ void ChromeTraceLogger::handleIterationStart(
 void ChromeTraceLogger::handleCpuActivity(
     const std::string& netName,
     int netIteration,
-    const external_api::OpDetails& op) {
+    const CpuOpInfo& op) {
   if (!traceOf_) {
     return;
   }
@@ -313,7 +313,7 @@ void ChromeTraceLogger::handleLinkEnd(
 
 void ChromeTraceLogger::handleRuntimeActivity(
     const CUpti_ActivityAPI* activity,
-    const external_api::OpDetails& ext) {
+    const CpuOpInfo& ext) {
   if (!traceOf_) {
     return;
   }
@@ -350,7 +350,7 @@ void ChromeTraceLogger::handleRuntimeActivity(
 // GPU side kernel activity
 void ChromeTraceLogger::handleGpuActivity(
     const CUpti_ActivityKernel4* kernel,
-    const external_api::OpDetails& ext,
+    const CpuOpInfo& ext,
     int smCount) {
   if (!traceOf_) {
     return;
@@ -392,7 +392,7 @@ void ChromeTraceLogger::handleGpuActivity(
 // GPU side memcpy activity
 void ChromeTraceLogger::handleGpuActivity(
     const CUpti_ActivityMemcpy* memcpy,
-    const external_api::OpDetails& ext) {
+    const CpuOpInfo& ext) {
   if (!traceOf_) {
     return;
   }
@@ -429,7 +429,7 @@ void ChromeTraceLogger::handleGpuActivity(
 // GPU side memcpy activity
 void ChromeTraceLogger::handleGpuActivity(
     const CUpti_ActivityMemcpy2* memcpy,
-    const external_api::OpDetails& ext) {
+    const CpuOpInfo& ext) {
   if (!traceOf_) {
     return;
   }
@@ -466,7 +466,7 @@ void ChromeTraceLogger::handleGpuActivity(
 
 void ChromeTraceLogger::handleGpuActivity(
     const CUpti_ActivityMemset* memset,
-    const external_api::OpDetails& ext) {
+    const CpuOpInfo& ext) {
   if (!traceOf_) {
     return;
   }

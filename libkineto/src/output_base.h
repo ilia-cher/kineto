@@ -14,7 +14,7 @@
 #include <unordered_map>
 
 #include <cupti.h>
-#include "external_api.h"
+#include "CpuOpInfo.h"
 
 namespace KINETO_NAMESPACE {
 
@@ -60,28 +60,28 @@ class ActivityLogger {
   virtual void handleCpuActivity(
       const std::string& netName,
       int netIteration,
-      const libkineto::external_api::OpDetails& activity) = 0;
+      const libkineto::CpuOpInfo& activity) = 0;
 
   virtual void handleRuntimeActivity(
       const CUpti_ActivityAPI* activity,
-      const libkineto::external_api::OpDetails& ext) = 0;
+      const libkineto::CpuOpInfo& ext) = 0;
 
   virtual void handleGpuActivity(
       const CUpti_ActivityKernel4* kernel,
-      const libkineto::external_api::OpDetails& ext,
+      const libkineto::CpuOpInfo& ext,
       int smCount) = 0;
 
   virtual void handleGpuActivity(
       const CUpti_ActivityMemcpy* memcpy,
-      const libkineto::external_api::OpDetails& ext) = 0;
+      const libkineto::CpuOpInfo& ext) = 0;
 
   virtual void handleGpuActivity(
       const CUpti_ActivityMemcpy2* memcpy,
-      const libkineto::external_api::OpDetails& ext) = 0;
+      const libkineto::CpuOpInfo& ext) = 0;
 
   virtual void handleGpuActivity(
       const CUpti_ActivityMemset* memset,
-      const libkineto::external_api::OpDetails& ext) = 0;
+      const libkineto::CpuOpInfo& ext) = 0;
 
   // Create a flow event to an external event
   virtual void handleLinkStart(const CUpti_ActivityAPI* activity) = 0;

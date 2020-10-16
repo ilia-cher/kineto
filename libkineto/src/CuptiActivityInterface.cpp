@@ -11,7 +11,7 @@
 
 #include "Logger.h"
 #include "cupti_call.h"
-#include "external_api.h"
+#include "libkineto.h"
 
 using namespace std::chrono;
 using namespace libkineto;
@@ -98,7 +98,9 @@ void CUPTIAPI CuptiActivityInterface::bufferRequested(
     size_t* maxNumRecords) {
   if (singleton().allocatedGpuBufferCount > singleton().maxGpuBufferCount_) {
     // Stop profiling if we hit the max allowance
-    external_api::setProfileRequestActive(false);
+    if (libkineto::api().client()) {
+      libkineto::api().client()->stop();
+    }
     singleton().stopCollection = true;
     LOG(WARNING) << "Exceeded max GPU buffer count ("
                  << singleton().allocatedGpuBufferCount
@@ -165,6 +167,8 @@ void CuptiActivityInterface::clearActivities() {
   while (!gpuTraceQueue.empty()) {
     // FIXME: We might want to make sure we reuse
     // the same memory during warmup and tracing.
+    // Also, try to use the amount of memory required
+    // for active tracing during warmup.
     free(gpuTraceQueue.front().second);
     gpuTraceQueue.pop();
   }
@@ -204,10 +208,10 @@ void CuptiActivityInterface::enableCuptiActivities(
   }
 
   for (const auto& activity : selected_activities) {
-    if (activity == ActivityType::MEMCPY) {
+    if (activity == ActivityType::GPU_MEMCPY) {
       CUPTI_CALL(cuptiActivityEnable(CUPTI_ACTIVITY_KIND_MEMCPY));
     }
-    if (activity == ActivityType::MEMSET) {
+    if (activity == ActivityType::GPU_MEMSET) {
       CUPTI_CALL(cuptiActivityEnable(CUPTI_ACTIVITY_KIND_MEMSET));
     }
     if (activity == ActivityType::CONCURRENT_KERNEL) {
@@ -216,7 +220,7 @@ void CuptiActivityInterface::enableCuptiActivities(
     if (activity == ActivityType::EXTERNAL_CORRELATION) {
       CUPTI_CALL(cuptiActivityEnable(CUPTI_ACTIVITY_KIND_EXTERNAL_CORRELATION));
     }
-    if (activity == ActivityType::RUNTIME) {
+    if (activity == ActivityType::CUDA_RUNTIME) {
       CUPTI_CALL(cuptiActivityEnable(CUPTI_ACTIVITY_KIND_RUNTIME));
     }
   }
@@ -228,10 +232,10 @@ void CuptiActivityInterface::enableCuptiActivities(
 void CuptiActivityInterface::disableCuptiActivities(
     const std::set<ActivityType>& selected_activities) {
   for (const auto& activity : selected_activities) {
-    if (activity == ActivityType::MEMCPY) {
+    if (activity == ActivityType::GPU_MEMCPY) {
       CUPTI_CALL(cuptiActivityDisable(CUPTI_ACTIVITY_KIND_MEMCPY));
     }
-    if (activity == ActivityType::MEMSET) {
+    if (activity == ActivityType::GPU_MEMSET) {
       CUPTI_CALL(cuptiActivityDisable(CUPTI_ACTIVITY_KIND_MEMSET));
     }
     if (activity == ActivityType::CONCURRENT_KERNEL) {
@@ -240,7 +244,7 @@ void CuptiActivityInterface::disableCuptiActivities(
     if (activity == ActivityType::EXTERNAL_CORRELATION) {
       CUPTI_CALL(cuptiActivityDisable(CUPTI_ACTIVITY_KIND_EXTERNAL_CORRELATION));
     }
-    if (activity == ActivityType::RUNTIME) {
+    if (activity == ActivityType::CUDA_RUNTIME) {
       CUPTI_CALL(cuptiActivityDisable(CUPTI_ACTIVITY_KIND_RUNTIME));
     }
   }

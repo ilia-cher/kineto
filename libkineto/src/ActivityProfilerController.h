@@ -12,6 +12,7 @@
 #include <thread>
 
 #include "ActivityProfiler.h"
+#include "ActivityProfilerInterface.h"
 
 namespace KINETO_NAMESPACE {
 
@@ -23,24 +24,43 @@ using ActivityLoggerFactory =
 
 class ActivityProfilerController {
  public:
+  explicit ActivityProfilerController(ConfigLoader& configLoader, bool cpuOnly);
   ActivityProfilerController(const ActivityProfilerController&) = delete;
   ActivityProfilerController& operator=(const ActivityProfilerController&) =
       delete;
 
   ~ActivityProfilerController();
 
-  static void init(bool cpuOnly);
   static void setLoggerFactory(const ActivityLoggerFactory& factory);
 
+  void prepareTrace(Config& config);
+
+  void startTrace() {
+    profiler_->startTrace(std::chrono::system_clock::now());
+  }
+
+  void stopTrace() {
+    // FIXME: Refactor
+    if (libkineto::api().client()) {
+      libkineto::api().client()->stop();
+    }
+    profiler_->stopTrace(std::chrono::system_clock::now());
+  }
+
+  bool traceInclusionFilter(const std::string& match) {
+    return profiler_->applyNetFilter(match);
+  }
+
+  void transferCpuTrace(
+      std::unique_ptr<libkineto::CpuTraceBuffer> cpuTrace) {
+    return profiler_->transferCpuTrace(std::move(cpuTrace));
+  }
+
  private:
-  explicit ActivityProfilerController(
-      ConfigLoader& config_loader,
-      bool cpuOnly);
   void profilerLoop();
 
-  std::unique_ptr<ActivityProfilerController> activityProfilerController_;
   ConfigLoader& configLoader_;
-  ActivityProfiler profiler_;
+  std::unique_ptr<ActivityProfiler> profiler_;
   std::thread* profilerThread_;
   std::atomic_bool stopRunloop_{false};
 };

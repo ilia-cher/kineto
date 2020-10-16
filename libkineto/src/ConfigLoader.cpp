@@ -144,6 +144,7 @@ ConfigLoader::ConfigLoader()
 }
 
 ConfigLoader::~ConfigLoader() {
+  LOG(INFO) << "Destroying ConfigLoader";
   if (updateThread_) {
     stopFlag_ = true;
     {

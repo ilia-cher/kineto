@@ -8,6 +8,7 @@ def get_libkineto_srcs():
         "src/AbstractConfig.cpp",
         "src/ActivityProfilerController.cpp",
         "src/ActivityProfiler.cpp",
+        "src/ActivityProfilerInterface.cpp",
         "src/Config.cpp",
         "src/ConfigLoader.cpp",
         "src/CuptiActivityInterface.cpp",
@@ -17,8 +18,8 @@ def get_libkineto_srcs():
         "src/Demangle.cpp",
         "src/EventProfilerController.cpp",
         "src/EventProfiler.cpp",
-        # "src/external_api.cpp",
-        "src/libkineto.cpp",
+        "src/init.cpp",
+        # "src/libkineto_api.cpp",
         "src/Logger.cpp",
         "src/output_csv.cpp",
         "src/output_json.cpp",
@@ -27,5 +28,5 @@ def get_libkineto_srcs():
     ]
 
 def get_libkineto_public_headers():    
-    return ["include/external_api.h"]
+    return ["include/libkineto.h"]
 

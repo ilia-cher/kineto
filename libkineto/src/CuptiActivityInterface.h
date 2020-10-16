@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "CuptiActivityType.h"
+#include "ActivityType.h"
 
 #include <atomic>
 #include <cupti.h>

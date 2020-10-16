@@ -8,7 +8,7 @@
 #pragma once
 
 #include "AbstractConfig.h"
-#include "CuptiActivityType.h"
+#include "ActivityType.h"
 
 #include <assert.h>
 #include <chrono>
@@ -34,6 +34,8 @@ class Config : public AbstractConfig {
   }
 
   bool handleOption(const std::string& name, std::string& val) override;
+
+  void setClientDefaults() override;
 
   // Log events to this file
   const std::string& eventLogFile() const {
@@ -143,6 +145,10 @@ class Config : public AbstractConfig {
   // The types of activities selected in the configuration file
   const std::set<ActivityType>& selectedActivityTypes() const {
     return selectedActivityTypes_;
+  }
+
+  void setSelectedActivityTypes(const std::set<ActivityType>& types) {
+    selectedActivityTypes_ = types;
   }
 
   // Trace for this long
@@ -270,11 +276,11 @@ class Config : public AbstractConfig {
   // Sets the default activity types to be traced
   void selectDefaultActivityTypes() {
     // If the user has not specified an activity list, add all types
-    selectedActivityTypes_.insert(ActivityType::MEMCPY);
-    selectedActivityTypes_.insert(ActivityType::MEMSET);
+    selectedActivityTypes_.insert(ActivityType::GPU_MEMCPY);
+    selectedActivityTypes_.insert(ActivityType::GPU_MEMSET);
     selectedActivityTypes_.insert(ActivityType::CONCURRENT_KERNEL);
     selectedActivityTypes_.insert(ActivityType::EXTERNAL_CORRELATION);
-    selectedActivityTypes_.insert(ActivityType::RUNTIME);
+    selectedActivityTypes_.insert(ActivityType::CUDA_RUNTIME);
   }
 
   int verboseLogLevel_;

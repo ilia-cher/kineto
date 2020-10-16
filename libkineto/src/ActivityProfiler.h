@@ -23,11 +23,11 @@
 #include <cupti.h>
 
 #include "ThreadName.h"
-#include "external_api.h"
+#include "libkineto.h"
+#include "output_base.h"
 
 namespace KINETO_NAMESPACE {
 
-class ActivityLogger;
 class Config;
 class CuptiActivityInterface;
 
@@ -50,43 +50,66 @@ class ActivityProfiler {
       const std::chrono::time_point<std::chrono::system_clock>& now,
       const std::chrono::time_point<std::chrono::system_clock>& nextWakeupTime);
 
+
+  // Explicit control
+  // FIXME: Refactor out profiler loop
+  void startTrace(
+      const std::chrono::time_point<std::chrono::system_clock>& now) {
+    std::lock_guard<std::mutex> guard(mutex_);
+    startTraceUnlocked(now);
+  }
+
+
+  void stopTrace(const std::chrono::time_point<std::chrono::system_clock>& now) {
+    std::lock_guard<std::mutex> guard(mutex_);
+    stopTraceUnlocked(now);
+  }
+
+  void cancelTrace(
+      const std::chrono::time_point<std::chrono::system_clock>& now);
+
   // Set up profiler as specified in config.
   void configure(
       Config& config,
       std::unique_ptr<ActivityLogger> logger,
       const std::chrono::time_point<std::chrono::system_clock>& now);
 
-  // Registered with external API to pass CPU trace events over
+  // Registered with client API to pass CPU trace events over
   void transferCpuTrace(
-      std::unique_ptr<libkineto::external_api::CpuTraceBuffer> cpuTrace);
+      std::unique_ptr<libkineto::CpuTraceBuffer> cpuTrace);
 
   // Registered with external API so that CPU-side tracer can filter which nets
   // to trace
-  bool applyNetFilter(const std::string& name);
+  bool applyNetFilter(const std::string& name) {
+    std::lock_guard<std::mutex> guard(mutex_);
+    return applyNetFilterUnlocked(name);
+  }
+
+  bool applyNetFilterUnlocked(const std::string& name);
 
  private:
   class ExternalEventMap {
    public:
-    const libkineto::external_api::OpDetails& operator[](uint32_t id) {
+    const libkineto::CpuOpInfo& operator[](uint32_t id) {
       auto* res = events_[correlationMap_[id]];
       if (res == nullptr) {
         // Entry may be missing because cpu trace hasn't been processed yet
         // Insert a dummy element so that we can check for this in insertEvent
-        static const libkineto::external_api::OpDetails nullOp_{};
+        static const libkineto::CpuOpInfo nullOp_{};
         events_[correlationMap_[id]] = &nullOp_;
         res = &nullOp_;
       }
       return *res;
     }
 
-    void insertEvent(const libkineto::external_api::OpDetails* op);
+    void insertEvent(const libkineto::CpuOpInfo* op);
 
     void addCorrelation(uint64_t external_id, uint32_t cuda_id) {
       correlationMap_[cuda_id] = external_id;
     }
 
     void addTraceData(
-        std::unique_ptr<libkineto::external_api::CpuTraceBuffer> cpuTrace) {
+        std::unique_ptr<libkineto::CpuTraceBuffer> cpuTrace) {
       cpuTraces_.push_back(std::move(cpuTrace));
     }
 
@@ -102,7 +125,7 @@ class ActivityProfiler {
     // but this class also fully owns the objects it is pointing to so
     // it's not so bad. This is done for performance reasons and is an
     // implementation detail of this class that might change.
-    std::unordered_map<uint64_t, const libkineto::external_api::OpDetails*>
+    std::unordered_map<uint64_t, const libkineto::CpuOpInfo*>
         events_;
 
     // Cuda correlation id -> external correlation id
@@ -119,7 +142,7 @@ class ActivityProfiler {
     // the elements are stored in the event map and are accessed when the
     // GPU trace is processed at some later time. Once we know it's safe,
     // these are deleted.
-    std::vector<std::unique_ptr<libkineto::external_api::CpuTraceBuffer>>
+    std::vector<std::unique_ptr<libkineto::CpuTraceBuffer>>
         cpuTraces_;
   };
 
@@ -129,8 +152,11 @@ class ActivityProfiler {
     int cntr;
   };
 
-  // Stop tracing
-  void endTrace();
+  void startTraceUnlocked(
+      const std::chrono::time_point<std::chrono::system_clock>& now);
+
+  void stopTraceUnlocked(
+      const std::chrono::time_point<std::chrono::system_clock>& now);
 
   // Compress and upload the trace to Manifold if configured
   void finalizeTrace(const Config& config);
@@ -141,11 +167,11 @@ class ActivityProfiler {
   // Process a single CPU trace
   void processCpuTrace(
       int instance,
-      std::unique_ptr<libkineto::external_api::CpuTraceBuffer> cpuTrace,
+      std::unique_ptr<libkineto::CpuTraceBuffer> cpuTrace,
       bool logNet);
 
   bool inline passesGpuOpCountThreshold(
-      const libkineto::external_api::CpuTraceBuffer& cpuTrace) {
+      const libkineto::CpuTraceBuffer& cpuTrace) {
     return cpuOnly_ || cpuTrace.gpuOpCount < 0 ||
         cpuTrace.gpuOpCount >= netGpuOpCountThreshold_;
   }
@@ -153,7 +179,7 @@ class ActivityProfiler {
   // Returns true if net name is to be tracked for a specified number of
   // iterations.
   bool iterationTargetMatch(
-      const libkineto::external_api::CpuTraceBuffer& trace);
+      const libkineto::CpuTraceBuffer& trace);
 
   // net name to id
   int netId(const std::string& netName);
@@ -165,7 +191,7 @@ class ActivityProfiler {
   void updateGpuNetSpan(
       uint64_t startUsecs,
       uint64_t endUsecs,
-      const libkineto::external_api::OpDetails& ext);
+      const libkineto::CpuOpInfo& ext);
   bool outOfRange(uint64_t startNsecs, uint64_t endNsecs);
   void handleCorrelationActivity(
       const CUpti_ActivityExternalCorrelation* correlation);
@@ -176,7 +202,7 @@ class ActivityProfiler {
 
   // Is logging disabled for this event?
   // Logging can be disabled due to operator count, net name filter etc.
-  inline bool loggingDisabled(const libkineto::external_api::OpDetails& event) {
+  inline bool loggingDisabled(const libkineto::CpuOpInfo& event) {
     const auto& it = opNetMap_.find(event.correlationId);
     return it != opNetMap_.end() &&
         externalDisabledNets_.find(it->second.net) !=
@@ -189,11 +215,7 @@ class ActivityProfiler {
     }
   }
 
-  void resetTraceData() {
-    externalEvents_.clear();
-    externalDisabledNets_.clear();
-    gpuNetSpanMap_.clear();
-  }
+  void resetTraceData();
 
   void addOverheadSample(profilerOverhead& counter, int64_t overhead) {
     counter.overhead += overhead;
@@ -293,7 +315,7 @@ class ActivityProfiler {
   // single consumer -- profilerLoop
   std::queue<std::pair<
       int, // instance
-      std::unique_ptr<libkineto::external_api::CpuTraceBuffer>>>
+      std::unique_ptr<libkineto::CpuTraceBuffer>>>
       cpuTraceQueue_;
 };
 
