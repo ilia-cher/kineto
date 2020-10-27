@@ -7,14 +7,19 @@
 
 #pragma once
 
+
+#include <list>
+#include <memory>
+#include <vector>
+
+#include "libkineto.h"
+#include "CuptiActivityBuffer.h"
+
 namespace KINETO_NAMESPACE {
 
-enum class ActivityType {
-    MEMCPY,
-    MEMSET,
-    CONCURRENT_KERNEL,
-    EXTERNAL_CORRELATION,
-    RUNTIME
+struct ActivityBuffers {
+  std::vector<std::unique_ptr<libkineto::CpuTraceBuffer>> cpu;
+  std::unique_ptr<std::list<CuptiActivityBuffer>> gpu;
 };
 
 } // namespace KINETO_NAMESPACE

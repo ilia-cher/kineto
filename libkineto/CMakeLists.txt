@@ -38,7 +38,7 @@ endif()
 # Define file lists
 get_filelist("get_libkineto_srcs()" LIBKINETO_SRCS)
 get_filelist("get_libkineto_public_headers()" LIBKINETO_PUBLIC_HEADERS)
-set(LIBKINETO_API_SRCS "${LIBKINETO_SOURCE_DIR}/external_api.cpp")
+set(LIBKINETO_API_SRCS "${LIBKINETO_SOURCE_DIR}/libkineto_api.cpp")
 
 
 add_library(kineto_base OBJECT ${LIBKINETO_SRCS})
