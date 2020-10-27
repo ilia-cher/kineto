@@ -86,15 +86,21 @@ message(INFO " CUPTI_INCLUDE_DIR = ${CUPTI_INCLUDE_DIR}")
 
 target_include_directories(kineto_base PUBLIC
       $<BUILD_INTERFACE:${LIBKINETO_INCLUDE_DIR}>
+      $<BUILD_INTERFACE:${LIBKINETO_SOURCE_DIR}>
       $<BUILD_INTERFACE:${FMT_INCLUDE_DIR}>
       $<BUILD_INTERFACE:${CUPTI_INCLUDE_DIR}>
       $<BUILD_INTERFACE:${CUDA_INCLUDE_DIRS}>)
 
 target_include_directories(kineto_api PUBLIC
-      $<BUILD_INTERFACE:${LIBKINETO_INCLUDE_DIR}>)
+      $<BUILD_INTERFACE:${LIBKINETO_INCLUDE_DIR}>
+      $<BUILD_INTERFACE:${LIBKINETO_SOURCE_DIR}>)
 
 if(KINETO_LIBRARY_TYPE STREQUAL "default")
   add_library(kineto
+    $<TARGET_OBJECTS:kineto_base>
+    $<TARGET_OBJECTS:kineto_api>)
+elseif(KINETO_LIBRARY_TYPE STREQUAL "static")
+  add_library(kineto STATIC
     $<TARGET_OBJECTS:kineto_base>
     $<TARGET_OBJECTS:kineto_api>)
 elseif(KINETO_LIBRARY_TYPE STREQUAL "shared")
@@ -106,6 +112,8 @@ elseif(KINETO_LIBRARY_TYPE STREQUAL "shared")
 else()
   message(FATAL_ERROR "Unsupported library type ${KINETO_LIBRARY_TYPE}")
 endif()
+
+target_link_libraries(kineto "${CUDA_cupti_LIBRARY}")
 
 target_link_libraries(kineto $<BUILD_INTERFACE:fmt>)
 add_dependencies(kineto fmt)

@@ -5,23 +5,24 @@
 
 def get_libkineto_srcs():
     return [
-        "src/ActivityProfiler.cpp",
+        "src/AbstractConfig.cpp",
         "src/ActivityProfilerController.cpp",
+        "src/ActivityProfiler.cpp",
         "src/Config.cpp",
         "src/ConfigLoader.cpp",
         "src/CuptiActivityInterface.cpp",
         "src/CuptiEventInterface.cpp",
         "src/CuptiMetricInterface.cpp",
-        "src/Demangle.cpp",
-        "src/EventProfiler.cpp",
-        "src/EventProfilerController.cpp",
-        "src/Logger.cpp",
-        "src/ProcessInfo.cpp",
-        "src/ThreadName.cpp",
         "src/cupti_runtime_cbid_names.cpp",
+        "src/Demangle.cpp",
+        "src/EventProfilerController.cpp",
+        "src/EventProfiler.cpp",
         "src/libkineto.cpp",
+        "src/Logger.cpp",
         "src/output_csv.cpp",
         "src/output_json.cpp",
+        "src/ProcessInfo.cpp",
+        "src/ThreadName.cpp",
     ]
 
 def get_libkineto_public_headers():
