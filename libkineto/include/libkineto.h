@@ -67,7 +67,7 @@ class LibkinetoApi {
 
   // Stop and process trace, producing an in-memory list of trace records.
   // The processing is done synchronously (using the calling thread.)
-  const std::unique_ptr<ActivityTraceInterface> stopTrace() {
+  std::unique_ptr<ActivityTraceInterface> stopTrace() {
     return activityProfiler_->stopTrace();
   }
 

@@ -15,6 +15,11 @@ namespace libkineto {
 
 class ActivityLogger;
 
+enum class DeviceType : uint8_t {
+  CPU = 0,
+  CUDA = 1,
+};
+
 struct TraceActivity {
   virtual ~TraceActivity() {}
   virtual int64_t deviceId() const = 0;
@@ -25,6 +30,7 @@ struct TraceActivity {
   virtual const std::string name() const = 0;
   virtual const TraceActivity* linkedActivity() const = 0;
   virtual void log(ActivityLogger& logger) const = 0;
+  virtual DeviceType deviceType() const = 0;
 };
 
 namespace {

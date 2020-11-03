@@ -124,6 +124,9 @@ class MemoryTraceLogger : public ActivityLogger {
     void log(ActivityLogger& logger) const override {
       logger.handleCpuActivity(wrappee_, span_);
     }
+    DeviceType deviceType() const {
+      return DeviceType::CPU;
+    }
     const libkineto::ClientTraceActivity& wrappee_;
     const TraceSpan& span_;
   };

@@ -48,6 +48,9 @@ struct RuntimeActivity : public CuptiActivity<CUpti_ActivityAPI> {
   int64_t resourceId() const override {return activity_.threadId;}
   const std::string name() const override {return runtimeCbidName(activity_.cbid);}
   void log(ActivityLogger& logger) const override;
+  DeviceType deviceType() const override {
+    return DeviceType::CPU;
+  }
 };
 
 // Base class for GPU activities.
@@ -61,7 +64,9 @@ struct GpuActivity : public CuptiActivity<T> {
   const std::string name() const override;
   void log(ActivityLogger& logger) const override;
   const T& raw() const {return CuptiActivity<T>::raw();}
+  DeviceType deviceType() const override {
+    return DeviceType::CUDA;
+  }
 };
 
 } // namespace KINETO_NAMESPACE
-

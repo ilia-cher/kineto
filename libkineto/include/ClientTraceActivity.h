@@ -52,6 +52,10 @@ struct ClientTraceActivity : TraceActivity {
     // Unimplemented by default
   }
 
+  DeviceType deviceType() const override {
+    return DeviceType::CPU;
+  }
+
   int64_t startTime;
   int64_t endTime;
   int64_t correlation;
