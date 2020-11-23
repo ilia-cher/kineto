@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules")
 
@@ -65,9 +65,11 @@ if(NOT TARGET fmt)
   endif()
 
   #build fmt
-  set(FMT_LIBRARY_TYPE static CACHE STRING "Set lib type to static")
+  set(TEMP_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
+  set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared libs" FORCE)
   add_subdirectory("${FMT_SOURCE_DIR}" "${LIBKINETO_BINARY_DIR}/fmt")
   set_property(TARGET fmt PROPERTY POSITION_INDEPENDENT_CODE ON)
+  set(BUILD_SHARED_LIBS ${TEMP_BUILD_SHARED_LIBS} CACHE BOOL "Build shared libs" FORCE)
 endif()
 
 set(FMT_INCLUDE_DIR "${FMT_SOURCE_DIR}/include")

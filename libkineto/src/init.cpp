@@ -147,7 +147,7 @@ void libkineto_init(void) {
 #define FUNCNAME(a, b) CONCAT(a, b)
 #define LIBKINETO_CONSTRUCTOR FUNCNAME(KINETO_NAMESPACE, _create)
 #define LIBKINETO_DESTRUCTOR FUNCNAME(KINETO_NAMESPACE, _destroy)
-
+/*
 // dlopen() will call this function before returning
 __attribute__((constructor)) void libkineto_create(void) {
   // If CUDA_INJECTION64_PATH is set, don't initialize the library
@@ -163,7 +163,7 @@ __attribute__((constructor)) void libkineto_create(void) {
 __attribute__((destructor)) void libkineto_destroy(void) {
   LOG_IF(INFO, loadedByCuda) << "Destroying libkineto";
 }
-
+*/
 // The cuda driver calls this function if the CUDA_INJECTION64_PATH environment
 // variable is set
 int InitializeInjection(void) {
